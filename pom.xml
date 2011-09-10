@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ovea</groupId>
+        <artifactId>ovea</artifactId>
+        <version>2</version>
+    </parent>
+
+    <artifactId>ovea-pipe</artifactId>
+    <version>1.0.ga-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>ovea-pipe</name>
+    <description>Pipe streams</description>
+
+    <scm>
+        <connection>scm:git:git@github.com:Ovea/pipe.git</connection>
+        <developerConnection>scm:git:git@github.com:Ovea/pipe.git</developerConnection>
+        <url>http://github.com/Ovea/pipe</url>
+    </scm>
+
+    <dependencies>
+        <!-- Testing -->
+        <dependency>
+            <groupId>com.mycila</groupId>
+            <artifactId>mycila-junit</artifactId>
+            <version>1.1.ga</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.8.5</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
+
