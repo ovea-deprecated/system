@@ -249,6 +249,7 @@ public final class PipeStreamTest {
     public void pipeVerif() throws Exception {
         if (writer.isAlive())
             writer.join();
+        pipe.connect().await();
         assertFalse(pipe.isOpened());
         if (pipe.isClosed()) {
             assertEquals("Hello world !Hello world !Hello world !Hello world !", new String(baos.toByteArray()));
