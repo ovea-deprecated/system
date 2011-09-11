@@ -1,6 +1,6 @@
 Pipe any streams, socket, process, ...
 
-== Pipes ==
+## Pipes
 
     // create a pipe
     Pipe pipe = new PipeStream("optional  pipe name", myInputStream, myOutputStream).listenedBy(myOptionalPipeListener);
@@ -13,7 +13,7 @@ Pipe any streams, socket, process, ...
     connection.await(1, SECONDS);
     connection.interrupt();
 
-== Tunnels ==
+## Tunnels
 
     Socket socket1 = new Socket("localhost", 2000);
     Socket socket2 = new Socket("localhost", 2222);
