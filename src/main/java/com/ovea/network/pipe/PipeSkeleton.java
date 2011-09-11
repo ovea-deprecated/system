@@ -78,7 +78,7 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
     @Override
     public final Pipe listenedBy(PipeListener listener) {
         if (listener == null) throw new IllegalArgumentException("Listener cannot be null");
-        this.listener = listener;
+        this.listener = new OncePipeListener(listener);
         return this;
     }
 

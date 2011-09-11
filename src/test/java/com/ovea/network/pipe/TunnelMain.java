@@ -10,8 +10,9 @@ import java.net.Socket;
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-final class Main {
-    public static void main(String[] args) throws IOException, InterruptedException, BrokenTunnelException {
+final class TunnelMain {
+    public static void main(String[] args) throws IOException {
+        // start 2 netcat daemons first before running this class
         final Socket socket1 = new Socket("localhost", 2000);
         final Socket socket2 = new Socket("localhost", 2222);
         Tunnel tunnel = Tunnel.connect(socket1, socket2, new TunnelListener() {
@@ -35,6 +36,12 @@ final class Main {
                 System.out.println("onInterrupt - " + tunnel);
             }
         });
-        tunnel.await();
+        try {
+            tunnel.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace(System.out);
+        } catch (BrokenTunnelException e) {
+            e.printStackTrace(System.out);
+        }
     }
 }

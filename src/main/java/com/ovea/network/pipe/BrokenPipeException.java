@@ -22,7 +22,8 @@ import java.io.IOException;
  */
 public final class BrokenPipeException extends Exception {
     public BrokenPipeException(IOException e) {
-        super(e.getMessage(), e);
+        super(e.getClass().getName() + ": " + e.getMessage(), e);
+        setStackTrace(e.getStackTrace());
     }
 
     public BrokenPipeException(String message) {

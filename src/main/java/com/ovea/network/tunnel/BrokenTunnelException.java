@@ -22,6 +22,7 @@ import com.ovea.network.pipe.BrokenPipeException;
  */
 public final class BrokenTunnelException extends Exception {
     public BrokenTunnelException(BrokenPipeException cause) {
-        super("Broken tunnel: " + cause.getMessage(), cause);
+        super(cause.getClass().getName() + ": " + cause.getMessage(), cause);
+        setStackTrace(cause.getStackTrace());
     }
 }

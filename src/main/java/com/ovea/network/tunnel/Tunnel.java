@@ -20,12 +20,17 @@ public final class Tunnel {
 
     private final AtomicReference<State> state = new AtomicReference<State>(null);
     private final CountDownLatch latch = new CountDownLatch(2);
-    private final PipeConnection up;
-    private final PipeConnection down;
     private final String name;
+    private final TunnelListener listener;
 
-    private Tunnel(String name, Pipe up, Pipe down, final TunnelListener listener) {
+    private PipeConnection up;
+    private PipeConnection down;
+
+    private BrokenTunnelException brokenTunnelException;
+
+    private Tunnel(String name, Pipe up, Pipe down, TunnelListener listener) {
         this.name = name;
+        this.listener = new OnceTunnelListener(listener);
         this.up = up.listenedBy(new Listener(down, listener)).connect();
         this.down = down.listenedBy(new Listener(up, listener)).connect();
     }
@@ -47,8 +52,12 @@ public final class Tunnel {
     }
 
     public void interrupt() {
-        up.interrupt();
-        down.interrupt();
+        if (state.compareAndSet(null, State.INTERRUPTED) || state.compareAndSet(State.OPENED, State.INTERRUPTED)) {
+            up.interrupt();
+            down.interrupt();
+            up = down = null;
+            listener.onInterrupt(Tunnel.this);
+        }
     }
 
     @Override
@@ -72,19 +81,36 @@ public final class Tunnel {
     }
 
     public void await(long time, TimeUnit unit) throws InterruptedException, BrokenTunnelException, TimeoutException {
-        latch.await(time, unit);
-        //TODO
+        try {
+            if (latch.await(time, unit)) {
+                if (isBroken()) {
+                    throw brokenTunnelException;
+                }
+            } else {
+                throw new TimeoutException();
+            }
+        } catch (InterruptedException e) {
+            interrupt();
+            throw e;
+        }
     }
 
     public void await() throws InterruptedException, BrokenTunnelException {
-        latch.await();
-        //TODO
+        try {
+            latch.await();
+            if (isBroken()) {
+                throw brokenTunnelException;
+            }
+        } catch (InterruptedException e) {
+            interrupt();
+            throw e;
+        }
     }
 
     private class Listener implements PipeListener {
 
-        private final Pipe other;
-        private final TunnelListener listener;
+        private Pipe other;
+        private TunnelListener listener;
 
         private Listener(Pipe other, TunnelListener listener) {
             this.other = other;
@@ -103,6 +129,8 @@ public final class Tunnel {
             if (state.compareAndSet(null, State.CLOSED) || state.compareAndSet(State.OPENED, State.CLOSED)) {
                 other.connect().interrupt();
                 listener.onClose(Tunnel.this);
+                other = null;
+                listener = null;
             }
             latch.countDown();
         }
@@ -111,7 +139,9 @@ public final class Tunnel {
         public void onBroken(Pipe pipe, BrokenPipeException e) {
             if (state.compareAndSet(null, State.BROKEN) || state.compareAndSet(State.OPENED, State.BROKEN)) {
                 other.connect().interrupt();
-                listener.onBroken(Tunnel.this, new BrokenTunnelException(e));
+                listener.onBroken(Tunnel.this, brokenTunnelException = new BrokenTunnelException(e));
+                other = null;
+                listener = null;
             }
             latch.countDown();
         }
@@ -121,6 +151,8 @@ public final class Tunnel {
             if (state.compareAndSet(null, State.INTERRUPTED) || state.compareAndSet(State.OPENED, State.INTERRUPTED)) {
                 other.connect().interrupt();
                 listener.onInterrupt(Tunnel.this);
+                other = null;
+                listener = null;
             }
             latch.countDown();
         }
