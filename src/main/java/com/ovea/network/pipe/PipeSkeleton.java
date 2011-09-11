@@ -163,7 +163,7 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
                     }
                 }
             };
-            copier = new Thread(task, "pipe-" + pipe.name + "-thread");
+            copier = new Thread(task, pipe.name);
             copier.start();
         }
 
