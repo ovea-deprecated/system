@@ -33,6 +33,7 @@ import java.io.PipedOutputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
@@ -260,6 +261,7 @@ public final class PipeStreamTest {
 
     /////////////////////////////////////
 
+    static AtomicLong count = new AtomicLong();
     PipedOutputStream out = new PipedOutputStream();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PipeListener listener = mock(PipeListener.class);
@@ -285,13 +287,13 @@ public final class PipeStreamTest {
 
     @Before
     public void pipeSetup() throws Exception {
-        pipe = new PipeStream(new PipedInputStream(out), baos).listenedBy(new PipeListeners(listener));
+        pipe = new PipeStream("" + count.getAndIncrement(), new PipedInputStream(out), baos).listenedBy(new PipeListeners(listener));
         assertFalse(pipe.isOpened());
     }
 
     @After
     public void pipeVerif() throws Exception {
-        if(pipe.isOpened() || pipe.isReady()) {
+        if (pipe.isOpened() || pipe.isReady()) {
             pipe.connect().interrupt();
         }
         for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {

@@ -199,6 +199,7 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
         public void await(long time, TimeUnit unit) throws InterruptedException, TimeoutException, BrokenPipeException {
             try {
                 task.get(time, unit);
+                closeStreams(State.CLOSED);
             } catch (ExecutionException e) {
                 Throwable t = e;
                 if (e.getCause() != null) {
@@ -229,6 +230,7 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
         public void await() throws InterruptedException, BrokenPipeException {
             try {
                 task.get();
+                closeStreams(State.CLOSED);
             } catch (ExecutionException e) {
                 Throwable t = e;
                 if (e.getCause() != null) {
