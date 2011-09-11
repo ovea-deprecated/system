@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Ovea <dev@ovea.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.ovea.network.pipe;
 
 import com.mycila.junit.concurrent.ConcurrentJunitRunner;
@@ -10,10 +25,10 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.BitSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -29,8 +44,8 @@ public final class PipeStreamTest {
 
     @Test
     public void test_identity() throws Exception {
-        Pipe pipe1 = new PipeStream("1", new PipedInputStream(), new PipedOutputStream());
-        Pipe pipe2 = new PipeStream("1", new PipedInputStream(), new PipedOutputStream());
+        Pipe pipe1 = new PipeStream("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
+        Pipe pipe2 = new PipeStream("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
 
         assertEquals(pipe1, pipe2);
         assertEquals(pipe1.hashCode(), pipe2.hashCode());
@@ -190,6 +205,31 @@ public final class PipeStreamTest {
     }
 
     @Test
+    public void test_connect_handle_interrupt_pipe() throws Exception {
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    pipe.connect().await();
+                    fail();
+                } catch (InterruptedException e) {
+                    verify(listener, times(1)).onInterrupt(eq(pipe));
+                    verify(listener, times(0)).onClose(eq(pipe));
+                    verify(listener, times(1)).onConnect(eq(pipe));
+                    verify(listener, times(0)).onBroken(eq(pipe), Matchers.<BrokenPipeException>any());
+                } catch (BrokenPipeException e) {
+                    fail(e.getMessage());
+                }
+            }
+        };
+        t.start();
+        writer.start();
+        Thread.sleep(500);
+        pipe.connect().interrupt();
+        t.join();
+    }
+
+    @Test
     public void test_connect_handle_interrupt() throws Exception {
         writer.start();
         PipeConnection connection = pipe.connect();
@@ -249,7 +289,12 @@ public final class PipeStreamTest {
     public void pipeVerif() throws Exception {
         if (writer.isAlive())
             writer.join();
-        pipe.connect().await();
+        try {
+            pipe.connect().await(2, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            pipe.connect().interrupt();
+        }
         assertFalse(pipe.isOpened());
         if (pipe.isClosed()) {
             assertEquals("Hello world !Hello world !Hello world !Hello world !", new String(baos.toByteArray()));

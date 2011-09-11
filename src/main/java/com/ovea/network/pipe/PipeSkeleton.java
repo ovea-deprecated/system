@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Ovea <dev@ovea.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.ovea.network.pipe;
 
 import java.io.Closeable;
@@ -5,7 +20,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.UUID;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -114,10 +128,9 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
 
     private static final class Connection<IN extends Closeable, OUT extends Closeable> implements PipeConnection {
 
-        private final AtomicBoolean ignoreException = new AtomicBoolean(false);
         private final PipeSkeleton<IN, OUT> pipe;
         private final FutureTask<Object> task;
-        private Thread connection;
+        private Thread copier;
 
         private Connection(final PipeSkeleton<IN, OUT> pipe) {
             this.pipe = pipe;
@@ -128,30 +141,30 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
                     try {
                         pipe.copy(pipe.from, pipe.to);
                     } catch (InterruptedIOException e) {
-                        if (!ignoreException.get()) {
-                            closeStreams(State.INTERRUPTED);
-                            throw new InterruptedException(e.getMessage());
-                        }
+                        closeStreams(State.INTERRUPTED);
+                        throw new InterruptedException(e.getMessage());
                     } catch (BrokenPipeException e) {
-                        if (!ignoreException.get()) {
-                            closeStreams(State.BROKEN, e);
-                            throw e;
-                        }
+                        closeStreams(State.BROKEN, e);
+                        throw e;
                     } catch (IOException e) {
-                        if (!ignoreException.get()) {
-                            BrokenPipeException bpe = new BrokenPipeException(e);
-                            closeStreams(State.BROKEN, bpe);
-                            throw bpe;
-                        }
-                    }
-                    if (!ignoreException.get()) {
-                        closeStreams(State.CLOSED);
+                        BrokenPipeException bpe = new BrokenPipeException(e);
+                        closeStreams(State.BROKEN, bpe);
+                        throw bpe;
                     }
                     return Boolean.TRUE;
                 }
-            });
-            connection = new Thread(task, "pipe-" + pipe.name + "-thread");
-            connection.start();
+            }) {
+                @Override
+                protected void done() {
+                    if (isCancelled()) {
+                        closeStreams(State.INTERRUPTED);
+                    } else {
+                        closeStreams(State.CLOSED);
+                    }
+                }
+            };
+            copier = new Thread(task, "pipe-" + pipe.name + "-thread");
+            copier.start();
         }
 
         @Override
@@ -179,7 +192,6 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
 
         @Override
         public void interrupt() {
-            ignoreException.set(true);
             closeStreams(State.INTERRUPTED);
         }
 
@@ -205,9 +217,11 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
                 throw re;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                ignoreException.set(true);
                 closeStreams(State.INTERRUPTED);
                 throw e;
+            } catch (CancellationException e) {
+                closeStreams(State.INTERRUPTED);
+                throw new InterruptedException();
             }
         }
 
@@ -233,17 +247,24 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
                 throw re;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                ignoreException.set(true);
                 closeStreams(State.INTERRUPTED);
                 throw e;
+            } catch (CancellationException e) {
+                closeStreams(State.INTERRUPTED);
+                throw new InterruptedException();
             }
         }
 
         private void closeStreams(State end, BrokenPipeException... e) {
             if (pipe.state.compareAndSet(State.OPENED, end) || pipe.state.compareAndSet(State.READY, end)) {
-                if (connection != null) {
-                    connection.interrupt();
-                    connection = null;
+                if (copier != null) {
+                    copier.interrupt();
+                    try {
+                        copier.join();
+                    } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
+                    }
+                    copier = null;
                 }
                 if (pipe.from != null) {
                     try {
