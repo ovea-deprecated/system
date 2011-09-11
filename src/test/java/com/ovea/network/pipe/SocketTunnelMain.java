@@ -6,13 +6,11 @@ import com.ovea.network.tunnel.TunnelListener;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-final class TunnelMain2 {
+final class SocketTunnelMain {
     public static void main(String[] args) throws IOException {
         // start 2 netcat daemons first before running this class
         final Socket socket1 = new Socket("localhost", 2000);
@@ -39,14 +37,11 @@ final class TunnelMain2 {
             }
         });
         try {
-            tunnel.await(2, TimeUnit.SECONDS);
+            tunnel.await();
         } catch (InterruptedException e) {
             e.printStackTrace(System.out);
         } catch (BrokenTunnelException e) {
             e.printStackTrace(System.out);
-        } catch (TimeoutException e) {
-            System.out.println("TIMEOUT");
-            tunnel.interrupt();
         }
     }
 }
