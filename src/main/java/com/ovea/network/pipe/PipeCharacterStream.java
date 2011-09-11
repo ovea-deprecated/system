@@ -15,7 +15,9 @@
  */
 package com.ovea.network.pipe;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
@@ -32,8 +34,6 @@ public final class PipeCharacterStream extends PipeSkeleton<Reader, Writer> {
 
     @Override
     protected void copy(Reader from, Writer to) throws IOException, BrokenPipeException {
-        from = new BufferedReader(from);
-        to = new BufferedWriter(to);
         char[] buffer = new char[8192];
         int len;
         while (canCopy() && (len = from.read(buffer)) != -1) {

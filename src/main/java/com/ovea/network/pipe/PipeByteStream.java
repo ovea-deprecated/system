@@ -15,7 +15,9 @@
  */
 package com.ovea.network.pipe;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
@@ -32,8 +34,6 @@ public final class PipeByteStream extends PipeSkeleton<InputStream, OutputStream
 
     @Override
     protected void copy(InputStream from, OutputStream to) throws IOException, BrokenPipeException {
-        //from = new BufferedInputStream(from);
-        //to = new BufferedOutputStream(to);
         byte[] buffer = new byte[8192];
         int len;
         while (canCopy() && (len = from.read(buffer)) != -1) {
