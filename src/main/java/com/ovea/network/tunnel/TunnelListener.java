@@ -13,25 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ovea.network.pipe;
+package com.ovea.network.tunnel;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public class PipeListenerAdapter implements PipeListener {
-    @Override
-    public void onConnect(Pipe pipe) {
-    }
+public interface TunnelListener {
+    void onConnect(Tunnel tunnel);
 
-    @Override
-    public void onClose(Pipe pipe) {
-    }
+    void onClose(Tunnel tunnel);
 
-    @Override
-    public void onBroken(Pipe pipe, BrokenPipeException e) {
-    }
+    void onBroken(Tunnel tunnel, BrokenTunnelException e);
 
-    @Override
-    public void onInterrupt(Pipe pipe) {
-    }
+    void onInterrupt(Tunnel tunnel);
 }

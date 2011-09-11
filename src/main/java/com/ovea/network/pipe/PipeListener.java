@@ -21,14 +21,14 @@ package com.ovea.network.pipe;
 public interface PipeListener {
 
     /**
-     * Called when a pipe is closed correctly after the stream ends
-     */
-    void onClose(Pipe pipe);
-
-    /**
      * Called when the pipe is connected
      */
     void onConnect(Pipe pipe);
+
+    /**
+     * Called when a pipe is closed correctly after the stream ends
+     */
+    void onClose(Pipe pipe);
 
     /**
      * Called if a stream is broken

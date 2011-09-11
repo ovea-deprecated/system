@@ -13,31 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ovea.network.pipe;
+package com.ovea.network.tunnel;
 
-import java.io.*;
+import com.ovea.network.pipe.BrokenPipeException;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public final class PipeCharacterStream extends PipeSkeleton<Reader, Writer> {
-
-    public PipeCharacterStream(Reader from, Writer to) {
-        super(from, to);
-    }
-
-    public PipeCharacterStream(String name, Reader from, Writer to) {
-        super(name, from, to);
-    }
-
-    @Override
-    protected void copy(Reader from, Writer to) throws IOException, BrokenPipeException {
-        from = new BufferedReader(from);
-        to = new BufferedWriter(to);
-        char[] buffer = new char[8192];
-        int len;
-        while (canCopy() && (len = from.read(buffer)) != -1) {
-            to.write(buffer, 0, len);
-        }
+public final class BrokenTunnelException extends Exception {
+    public BrokenTunnelException(BrokenPipeException cause) {
+        super("Broken tunnel: " + cause.getMessage(), cause);
     }
 }

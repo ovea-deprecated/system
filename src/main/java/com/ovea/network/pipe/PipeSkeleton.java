@@ -259,11 +259,6 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
             if (pipe.state.compareAndSet(State.OPENED, end) || pipe.state.compareAndSet(State.READY, end)) {
                 if (copier != null) {
                     copier.interrupt();
-                    try {
-                        copier.join();
-                    } catch (InterruptedException e1) {
-                        Thread.currentThread().interrupt();
-                    }
                     copier = null;
                 }
                 if (pipe.from != null) {
