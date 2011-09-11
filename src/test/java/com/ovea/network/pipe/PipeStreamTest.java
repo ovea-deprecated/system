@@ -15,6 +15,7 @@
  */
 package com.ovea.network.pipe;
 
+import com.mycila.junit.concurrent.Concurrency;
 import com.mycila.junit.concurrent.ConcurrentJunitRunner;
 import com.mycila.junit.rule.TimeRule;
 import org.junit.After;
@@ -29,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -40,10 +42,12 @@ import static org.mockito.Mockito.*;
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
 @RunWith(ConcurrentJunitRunner.class)
+@Concurrency(15)
 public final class PipeStreamTest {
 
     @Test
     public void test_identity() throws Exception {
+        writer.start();
         Pipe pipe1 = new PipeStream("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
         Pipe pipe2 = new PipeStream("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
 
@@ -270,7 +274,7 @@ public final class PipeStreamTest {
                 }
                 out.close();
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+                //e.printStackTrace(System.out);
                 Thread.currentThread().interrupt();
             }
         }
@@ -287,13 +291,13 @@ public final class PipeStreamTest {
 
     @After
     public void pipeVerif() throws Exception {
-        if (writer.isAlive())
-            writer.join();
-        try {
-            pipe.connect().await(2, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
+        if(pipe.isOpened() || pipe.isReady()) {
             pipe.connect().interrupt();
+        }
+        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+            if (entry.getKey().getName().equals("pipe-" + pipe.name() + "-thread")) {
+                fail(entry.getKey().getName());
+            }
         }
         assertFalse(pipe.isOpened());
         if (pipe.isClosed()) {

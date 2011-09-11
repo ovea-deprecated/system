@@ -257,24 +257,28 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
 
         private void closeStreams(State end, BrokenPipeException... e) {
             if (pipe.state.compareAndSet(State.OPENED, end) || pipe.state.compareAndSet(State.READY, end)) {
-                if (copier != null) {
+                if (end == State.INTERRUPTED && copier != Thread.currentThread()) {
+                    task.cancel(true);
                     copier.interrupt();
-                    copier = null;
                 }
-                if (pipe.from != null) {
+                try {
+                    pipe.from.close();
+                } catch (Exception ignored) {
+                }
+                try {
+                    pipe.to.close();
+                } catch (Exception ignored) {
+                }
+                pipe.from = null;
+                pipe.to = null;
+                if (copier != Thread.currentThread()) {
                     try {
-                        pipe.from.close();
-                    } catch (Exception ignored) {
+                        copier.join();
+                    } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
                     }
-                    pipe.from = null;
                 }
-                if (pipe.to != null) {
-                    try {
-                        pipe.to.close();
-                    } catch (Exception ignored) {
-                    }
-                    pipe.to = null;
-                }
+                copier = null;
                 switch (end) {
                     case INTERRUPTED:
                         pipe.listener().onInterrupt(pipe());
@@ -288,6 +292,5 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
                 }
             }
         }
-
     }
 }
