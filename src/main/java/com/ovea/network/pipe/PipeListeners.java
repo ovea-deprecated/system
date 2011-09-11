@@ -48,23 +48,16 @@ public final class PipeListeners implements PipeListener {
     }
 
     @Override
-    public void onError(Pipe pipe, BrokenPipeException e) {
+    public void onBroken(Pipe pipe, BrokenPipeException e) {
         for (PipeListener listener : listeners) {
-            listener.onError(pipe, e);
+            listener.onBroken(pipe, e);
         }
     }
 
     @Override
-    public void onInterrrupt(Pipe pipe) {
+    public void onInterrupt(Pipe pipe) {
         for (PipeListener listener : listeners) {
-            listener.onInterrrupt(pipe);
-        }
-    }
-
-    @Override
-    public void onTimeout(Pipe pipe) {
-        for (PipeListener listener : listeners) {
-            listener.onTimeout(pipe);
+            listener.onInterrupt(pipe);
         }
     }
 }

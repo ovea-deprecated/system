@@ -1,8 +1,5 @@
 package com.ovea.network.pipe;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
@@ -13,39 +10,20 @@ public interface Pipe {
     String name();
 
     /**
-     * True if the pipe is connected
-     */
-    boolean isConnected();
-
-    /**
      * Set a pipe listener to get events
      */
     Pipe listenedBy(PipeListener listener);
 
     /**
-     * Pipe the streams and wait for completion
+     * Pipe the streams and returns immediatelly the connection handle. If the connection is already made returns the existing handle.
      *
-     * @throws BrokenPipeException  if the pipe is broken or cannot be connected
-     * @throws InterruptedException if the current thread was interrupted while waiting
+     * @return {@link PipeConnection} object to be able to interrupt or wait for the pipe to finish
      */
-    void connectAndWait() throws BrokenPipeException, InterruptedException;
+    PipeConnection connect();
 
-    /**
-     * Pipe the streams and wait for completion for a maximum amount of time
-     *
-     * @throws InterruptedException if the current thread was interrupted while waiting
-     * @throws TimeoutException     if the wait timed out
-     * @throws BrokenPipeException  if the pipe is broken or cannot be connected
-     */
-    void connectAndWait(long time, TimeUnit unit) throws TimeoutException, InterruptedException, BrokenPipeException;
-
-    /**
-     * Pipe the streams and returns immediatelly
-     *
-     * @return {@link PipeHandle} object to be able to interrupt or wait for the pipe to finish
-     * @throws PipeStateException if the pipe is not ready
-     */
-    //PipeHandle connect() throws PipeStateException;
-
-
+    boolean isReady();
+    boolean isOpened();
+    boolean isClosed();
+    boolean isBroken();
+    boolean isInterrupted();
 }

@@ -13,14 +13,10 @@ public class PipeListenerAdapter implements PipeListener {
     }
 
     @Override
-    public void onError(Pipe pipe, BrokenPipeException e) {
+    public void onBroken(Pipe pipe, BrokenPipeException e) {
     }
 
     @Override
-    public void onInterrrupt(Pipe pipe) {
-    }
-
-    @Override
-    public void onTimeout(Pipe pipe) {
+    public void onInterrupt(Pipe pipe) {
     }
 }

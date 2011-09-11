@@ -19,9 +19,9 @@ public final class PipeStream extends PipeSkeleton<InputStream, OutputStream> {
 
     @Override
     protected void copy(InputStream from, OutputStream to) throws IOException, BrokenPipeException {
-        byte[] buffer = new byte[5];
+        byte[] buffer = new byte[8192];
         int len;
-        while (!Thread.currentThread().isInterrupted() && isConnected() && (len = from.read(buffer)) != -1) {
+        while (canCopy() && (len = from.read(buffer)) != -1) {
             to.write(buffer, 0, len);
         }
     }
