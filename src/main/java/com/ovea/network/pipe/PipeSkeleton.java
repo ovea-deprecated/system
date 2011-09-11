@@ -186,8 +186,7 @@ public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> 
         @Override
         public void await(long time, TimeUnit unit) throws InterruptedException, TimeoutException, BrokenPipeException {
             try {
-                Object o = task.get(time, unit);
-                System.out.println(o);
+                task.get(time, unit);
             } catch (ExecutionException e) {
                 Throwable t = e;
                 if (e.getCause() != null) {
