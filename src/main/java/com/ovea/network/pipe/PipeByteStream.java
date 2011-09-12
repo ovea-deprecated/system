@@ -22,7 +22,7 @@ import java.io.OutputStream;
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public final class PipeByteStream extends PipeSkeleton<InputStream, OutputStream> {
+final class PipeByteStream extends PipeSkeleton<InputStream, OutputStream> {
 
     public PipeByteStream(InputStream from, OutputStream to) {
         super(from, to);

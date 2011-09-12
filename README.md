@@ -1,9 +1,9 @@
 Pipe any streams, socket, process, ...
 
-## Pipes
+## Stream Pipes
 
     // create a pipe
-    Pipe pipe = new PipeStream("optional  pipe name", myInputStream, myOutputStream).listenedBy(myOptionalPipeListener);
+    Pipe pipe = Pipes.create("optional  pipe name", myInputStream, myOutputStream).listenedBy(myOptionalPipeListener);
 
     // get the connection handle
     PipeConnection connection = pipe.connect();
@@ -13,7 +13,17 @@ Pipe any streams, socket, process, ...
     connection.await(1, SECONDS);
     connection.interrupt();
 
-## Tunnels
+## Process Pipes
+
+    Process end = Pipes.pipe(
+            new ProcessBuilder("ls", "-al", "/workspace/ovea/project/pipe/src").start(),
+            new ProcessBuilder("cut", "-c", "50-").start(),
+            new ProcessBuilder("grep", "-v", "-E", "\"^\\.\\.?$\"").start());
+    Pipes.connect(end.getInputStream(), System.out);
+    Pipes.connect(end.getErrorStream(), System.err);
+    end.waitFor();
+
+## Socket Tunnels
 
     Socket socket1 = new Socket("localhost", 2000);
     Socket socket2 = new Socket("localhost", 2222);

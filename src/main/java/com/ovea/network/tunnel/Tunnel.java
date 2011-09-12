@@ -185,8 +185,8 @@ public final class Tunnel {
         String r = right.getInetAddress().getHostAddress() + ":" + right.getPort();
         return new Tunnel(
                 l + "<=>" + r,
-                new PipeByteStream(l + "=>" + r, left.getInputStream(), right.getOutputStream()),
-                new PipeByteStream(r + "=>" + l, right.getInputStream(), left.getOutputStream()),
+                Pipes.create(l + "=>" + r, left.getInputStream(), right.getOutputStream()),
+                Pipes.create(r + "=>" + l, right.getInputStream(), left.getOutputStream()),
                 new TunnelListeners(new TunnelListenerAdapter() {
                     @Override
                     public void onClose(Tunnel tunnel) {

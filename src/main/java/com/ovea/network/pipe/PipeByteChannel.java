@@ -25,7 +25,7 @@ import java.nio.channels.WritableByteChannel;
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public final class PipeByteChannel extends PipeSkeleton<ReadableByteChannel, WritableByteChannel> {
+final class PipeByteChannel extends PipeSkeleton<ReadableByteChannel, WritableByteChannel> {
 
     public PipeByteChannel(ReadableByteChannel from, WritableByteChannel to) {
         super(from, to);

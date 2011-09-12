@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ovea.network.pipe;
+package com.ovea.network;
 
 import com.mycila.junit.concurrent.Concurrency;
 import com.mycila.junit.concurrent.ConcurrentJunitRunner;
 import com.mycila.junit.rule.TimeRule;
+import com.ovea.network.pipe.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,8 +50,8 @@ public final class PipeStreamTest {
     @Test
     public void test_identity() throws Exception {
         writer.start();
-        Pipe pipe1 = new PipeStream("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
-        Pipe pipe2 = new PipeStream("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
+        Pipe pipe1 = Pipes.create("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
+        Pipe pipe2 = Pipes.create("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
 
         assertEquals(pipe1, pipe2);
         assertEquals(pipe1.hashCode(), pipe2.hashCode());
@@ -287,7 +288,7 @@ public final class PipeStreamTest {
 
     @Before
     public void pipeSetup() throws Exception {
-        pipe = new PipeStream("" + count.getAndIncrement(), new PipedInputStream(out), baos).listenedBy(new PipeListeners(listener));
+        pipe = Pipes.create("" + count.getAndIncrement(), new PipedInputStream(out), baos).listenedBy(new PipeListeners(listener));
         assertFalse(pipe.isOpened());
     }
 

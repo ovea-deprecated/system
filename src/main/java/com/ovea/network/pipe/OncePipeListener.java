@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public final class OncePipeListener implements PipeListener {
+final class OncePipeListener implements PipeListener {
 
     private final AtomicReference<PipeListener> listener;
 

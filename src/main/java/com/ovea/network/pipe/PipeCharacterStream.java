@@ -22,7 +22,7 @@ import java.io.Writer;
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public final class PipeCharacterStream extends PipeSkeleton<Reader, Writer> {
+final class PipeCharacterStream extends PipeSkeleton<Reader, Writer> {
 
     public PipeCharacterStream(Reader from, Writer to) {
         super(from, to);

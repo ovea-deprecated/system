@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ovea.network.pipe;
+package com.ovea.network;
 
 import com.ovea.network.tunnel.BrokenTunnelException;
 import com.ovea.network.tunnel.Tunnel;

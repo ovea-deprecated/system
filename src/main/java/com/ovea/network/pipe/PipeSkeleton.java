@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
-public abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> implements Pipe {
+abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> implements Pipe {
 
     private static enum State {READY, OPENED, CLOSED, INTERRUPTED, BROKEN}
 
