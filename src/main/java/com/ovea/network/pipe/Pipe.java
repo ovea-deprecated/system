@@ -20,7 +20,7 @@ package com.ovea.network.pipe;
  */
 public interface Pipe {
     /**
-     * Pipe name, used in {@link #toString()}, {@link #equals(Object)} and {@link #hashCode()}
+     * Pipe name, used in {@link #toString()}
      */
     String name();
 

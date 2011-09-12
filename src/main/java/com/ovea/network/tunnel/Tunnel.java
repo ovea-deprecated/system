@@ -76,26 +76,13 @@ public final class Tunnel {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Tunnel tunnel = (Tunnel) o;
-        return down.equals(tunnel.down) && up.equals(tunnel.up);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = up.hashCode();
-        result = 31 * result + down.hashCode();
-        return result;
-    }
-
-    @Override
     public String toString() {
         return name;
     }
 
     public void await(long time, TimeUnit unit) throws InterruptedException, BrokenTunnelException, TimeoutException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
         try {
             if (latch.await(time, unit)) {
                 if (isBroken()) {
@@ -111,6 +98,8 @@ public final class Tunnel {
     }
 
     public void await() throws InterruptedException, BrokenTunnelException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
         try {
             latch.await();
             if (isBroken()) {

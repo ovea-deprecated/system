@@ -6,6 +6,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
@@ -68,7 +71,15 @@ public final class Pipes {
 
     /* process */
 
-    public static ProcessPipe pipe(Process left, Process right, Process... suite) {
-        return new ProcessPipe(left, right, suite);
+    public static ProcessPipe pipe(Process first, Process next, Process... others) {
+        if (first == null) throw new IllegalArgumentException("Missing first process");
+        if (next == null) throw new IllegalArgumentException("Missing second process");
+        List<Process> processes = new LinkedList<Process>();
+        processes.add(first);
+        processes.add(next);
+        if (others != null && others.length > 0) {
+            processes.addAll(Arrays.asList(others));
+        }
+        return new ProcessPipe(processes);
     }
 }

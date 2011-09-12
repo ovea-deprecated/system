@@ -15,13 +15,13 @@ Pipe any streams, socket, process, ...
 
 ## Process Pipes
 
-    Process end = Pipes.pipe(
+    ProcessPipe pipe = Pipes.pipe(
             new ProcessBuilder("ls", "-al", "/workspace/ovea/project/pipe/src").start(),
             new ProcessBuilder("cut", "-c", "50-").start(),
             new ProcessBuilder("grep", "-v", "-E", "\"^\\.\\.?$\"").start());
-    Pipes.connect(end.getInputStream(), System.out);
-    Pipes.connect(end.getErrorStream(), System.err);
-    end.waitFor();
+    Pipes.connect("out", pipe.getInputStream(), System.out);
+    Pipes.connect("err", pipe.getErrorStream(), System.err);
+    int retCode = pipe.waitFor();
 
 ## Socket Tunnels
 

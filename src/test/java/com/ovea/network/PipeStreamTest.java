@@ -53,13 +53,9 @@ public final class PipeStreamTest {
         Pipe pipe1 = Pipes.create("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
         Pipe pipe2 = Pipes.create("1", new ByteArrayInputStream("".getBytes()), new ByteArrayOutputStream());
 
-        assertEquals(pipe1, pipe2);
-        assertEquals(pipe1.hashCode(), pipe2.hashCode());
         assertEquals(pipe1.name(), pipe2.name());
         assertEquals(pipe1.toString(), pipe2.toString());
 
-        assertEquals(pipe1.connect(), pipe2.connect());
-        assertEquals(pipe1.connect().hashCode(), pipe2.hashCode());
         assertEquals(pipe1.connect().toString(), pipe2.connect().toString());
 
         pipe1.connect().interrupt();

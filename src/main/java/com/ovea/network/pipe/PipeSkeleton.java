@@ -49,7 +49,7 @@ abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> impleme
     }
 
     protected PipeSkeleton(IN from, OUT to) {
-        this(UUID.randomUUID().toString(), from, to);
+        this("pipe-" + UUID.randomUUID().toString(), from, to);
     }
 
     @Override
@@ -60,19 +60,6 @@ abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> impleme
     @Override
     public final String toString() {
         return name;
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PipeSkeleton that = (PipeSkeleton) o;
-        return name.equals(that.name);
-    }
-
-    @Override
-    public final int hashCode() {
-        return name.hashCode();
     }
 
     @Override
@@ -168,19 +155,6 @@ abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> impleme
         }
 
         @Override
-        public final boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Connection handle = (Connection) o;
-            return pipe.equals(handle.pipe);
-        }
-
-        @Override
-        public final int hashCode() {
-            return pipe.hashCode();
-        }
-
-        @Override
         public final String toString() {
             return pipe.toString();
         }
@@ -197,6 +171,8 @@ abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> impleme
 
         @Override
         public void await(long time, TimeUnit unit) throws InterruptedException, TimeoutException, BrokenPipeException {
+            if (Thread.interrupted())
+                throw new InterruptedException();
             try {
                 task.get(time, unit);
                 closeStreams(State.CLOSED);
@@ -228,6 +204,8 @@ abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> impleme
 
         @Override
         public void await() throws InterruptedException, BrokenPipeException {
+            if (Thread.interrupted())
+                throw new InterruptedException();
             try {
                 task.get();
                 closeStreams(State.CLOSED);

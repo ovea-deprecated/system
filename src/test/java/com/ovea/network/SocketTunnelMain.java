@@ -28,9 +28,12 @@ import java.net.Socket;
 final class SocketTunnelMain {
     public static void main(String[] args) throws IOException {
         // start 2 netcat daemons first before running this class
+        Process nc2000 = new ProcessBuilder("C:\\cygwin\\bin\\nc.exe", "-l", "-v", "-p", "2000").start();
+        Process nc2222 = new ProcessBuilder("C:\\cygwin\\bin\\nc.exe", "-l", "-v", "-p", "2222").start();
+
         final Socket socket1 = new Socket("localhost", 2000);
         final Socket socket2 = new Socket("localhost", 2222);
-        Tunnel tunnel = Tunnel.connect(socket1, socket2, new TunnelListener() {
+        final Tunnel tunnel = Tunnel.connect(socket1, socket2, new TunnelListener() {
             @Override
             public void onConnect(Tunnel tunnel) {
                 System.out.println("onConnect - " + tunnel);
@@ -51,6 +54,16 @@ final class SocketTunnelMain {
                 System.out.println("onInterrupt - " + tunnel);
             }
         });
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                    tunnel.interrupt();
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }.start();
         try {
             tunnel.await();
         } catch (InterruptedException e) {

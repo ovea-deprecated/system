@@ -30,6 +30,9 @@ import java.util.concurrent.TimeoutException;
 final class SocketTunnelMain2 {
     public static void main(String[] args) throws IOException {
         // start 2 netcat daemons first before running this class
+        Process nc2000 = new ProcessBuilder("C:\\cygwin\\bin\\nc.exe", "-l", "-v", "-p", "2000").start();
+        Process nc2222 = new ProcessBuilder("C:\\cygwin\\bin\\nc.exe", "-l", "-v", "-p", "2222").start();
+        
         final Socket socket1 = new Socket("localhost", 2000);
         final Socket socket2 = new Socket("localhost", 2222);
         Tunnel tunnel = Tunnel.connect(socket1, socket2, new TunnelListener() {
