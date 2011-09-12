@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ovea.network.pipe;
+package com.ovea.network.proc;
+
+import com.ovea.network.pipe.PipeConnection;
+import com.ovea.network.pipe.Pipes;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -41,18 +44,41 @@ public final class ProcessPipe extends Process {
     private final CountDownLatch finished;
     private final SharedErrorStream sharedErrorStream = new SharedErrorStream();
     private final AtomicReference<Integer> exitValue = new AtomicReference<Integer>();
-    private final Queue<Thread> threads = new LinkedList<Thread>();
+    private final Queue<FutureProcess> processes = new LinkedList<FutureProcess>();
     private final Queue<PipeConnection> pipes = new LinkedList<PipeConnection>();
 
-    ProcessPipe(List<? extends Process> processes) {
+    public ProcessPipe(List<? extends Process> processes) {
         processes = new ArrayList<Process>(processes);
+        if (processes.size() < 2) throw new IllegalArgumentException("Requires at least two processes");
         finished = new CountDownLatch(processes.size());
-        ThreadGroup group = new ThreadGroup(Thread.currentThread().getThreadGroup(), getClass().getSimpleName() + "-" + threadGroups.getAndIncrement() + " (" + processes.size() + ")");
         for (int i = 0; i < processes.size(); i++) {
             Process current = processes.get(i);
-            Thread thread = new Thread(group, new RunnableProcess(current, i == processes.size() - 1));
-            thread.start();
-            threads.add(thread);
+            final boolean isLast = i + 1 == processes.size();
+            this.processes.add(new FutureProcess(current, new FutureProcessListener() {
+                @Override
+                public void onComplete(FutureProcess futureProcess) {
+                    if (isLast) {
+                        exitValue.compareAndSet(null, futureProcess.process().exitValue());
+                    }
+                    try {
+                        sharedErrorStream.append(futureProcess.process().getErrorStream());
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    onInterrupted(futureProcess);
+                }
+
+                @Override
+                public void onInterrupted(FutureProcess futureProcess) {
+                    if (isLast) {
+                        try {
+                            sharedErrorStream.close();
+                        } catch (IOException ignored) {
+                        }
+                    }
+                    finished.countDown();
+                }
+            }));
             if (i > 0) {
                 pipes.add(Pipes.connect(processes.get(i - 1).getInputStream(), current.getOutputStream()));
             }
@@ -132,44 +158,13 @@ public final class ProcessPipe extends Process {
         while (!pipes.isEmpty()) {
             pipes.poll().interrupt();
         }
-        for (Thread thread : threads) {
-            thread.interrupt();
+        for (FutureProcess process : processes) {
+            process.cancel(true);
         }
-        try {
-            while (!threads.isEmpty()) {
-                threads.poll().join();
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    private final class RunnableProcess implements Runnable {
-        private final Process process;
-        private final boolean isLast;
-
-        private RunnableProcess(Process process, boolean isLast) {
-            this.process = process;
-            this.isLast = isLast;
-        }
-
-        @Override
-        public void run() {
+        while (!processes.isEmpty()) {
             try {
-                int end = process.waitFor();
-                if (isLast) {
-                    exitValue.compareAndSet(null, end);
-                }
-                sharedErrorStream.append(process.getErrorStream());
-            } catch (InterruptedException ignored) {
-            } finally {
-                if (isLast) {
-                    try {
-                        sharedErrorStream.close();
-                    } catch (IOException ignored) {
-                    }
-                }
-                finished.countDown();
+                processes.poll().get();
+            } catch (Throwable ignored) {
             }
         }
     }
@@ -179,6 +174,9 @@ public final class ProcessPipe extends Process {
         private final Lock lock = new ReentrantLock();
 
         void append(InputStream stream) throws InterruptedException {
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
             try {
                 int c;
                 lock.lockInterruptibly();

@@ -15,6 +15,8 @@
  */
 package com.ovea.network.pipe;
 
+import com.ovea.network.proc.ProcessPipe;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;

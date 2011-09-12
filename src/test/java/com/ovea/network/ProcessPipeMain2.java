@@ -16,7 +16,7 @@
 package com.ovea.network;
 
 import com.ovea.network.pipe.Pipes;
-import com.ovea.network.pipe.ProcessPipe;
+import com.ovea.network.proc.ProcessPipe;
 
 import java.io.IOException;
 
