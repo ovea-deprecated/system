@@ -36,6 +36,14 @@ public final class Main {
                 ProcUtils.kill(process.process());
             }
             process.get();
+
+            process = launch(win ? "cmd.exe" : "sh");
+            try {
+                process.get(1, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                ProcUtils.kill(process.getPID());
+            }
+            process.get();
         }
     }
 
