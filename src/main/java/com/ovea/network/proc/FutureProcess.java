@@ -15,6 +15,8 @@
  */
 package com.ovea.network.proc;
 
+import com.ovea.network.util.ProcUtils;
+
 import java.util.concurrent.*;
 
 /**
@@ -52,6 +54,7 @@ public final class FutureProcess implements Future<Integer> {
                     listener.onInterrupted(FutureProcess.this);
                 } finally {
                     try {
+                        // TODO - terminate then kill
                         process.destroy();
                     } catch (Throwable ignored) {
                     }
@@ -67,11 +70,21 @@ public final class FutureProcess implements Future<Integer> {
         return process;
     }
 
+    public long getPID() {
+        return ProcUtils.getPID(process());
+    }
+
     // delegates
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return exitCode.cancel(mayInterruptIfRunning);
+        boolean e = exitCode.cancel(mayInterruptIfRunning);
+        try {
+            process().waitFor();
+        } catch (InterruptedException e1) {
+            Thread.currentThread().interrupt();
+        }
+        return e;
     }
 
     @Override

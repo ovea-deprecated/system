@@ -26,7 +26,6 @@ import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,8 +34,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
 public final class ProcessPipe extends Process {
-
-    private static final AtomicLong threadGroups = new AtomicLong();
 
     private final InputStream inputStream;
     private final InputStream errorStream;
