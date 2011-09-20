@@ -8,17 +8,17 @@
         <version>2</version>
     </parent>
 
-    <artifactId>ovea-pipe</artifactId>
-    <version>1.2.ga-SNAPSHOT</version>
+    <artifactId>ovea-system</artifactId>
+    <version>1.0.ga-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>ovea-pipe</name>
-    <description>Pipe streams</description>
+    <name>ovea-system</name>
+    <description>System utilities</description>
 
     <scm>
-        <connection>scm:git:git@github.com:Ovea/pipe.git</connection>
-        <developerConnection>scm:git:git@github.com:Ovea/pipe.git</developerConnection>
-        <url>http://github.com/Ovea/pipe</url>
+        <connection>scm:git:git@github.com:Ovea/system.git</connection>
+        <developerConnection>scm:git:git@github.com:Ovea/system.git</developerConnection>
+        <url>http://github.com/Ovea/system</url>
     </scm>
 
     <build>
@@ -66,16 +66,16 @@
                             <relocations>
                                 <relocation>
                                     <pattern>com.sun.jna</pattern>
-                                    <shadedPattern>com.ovea.network.internal.jna</shadedPattern>
+                                    <shadedPattern>com.ovea.system.internal.jna</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.hyperic</pattern>
-                                    <shadedPattern>com.ovea.network.internal.sigar</shadedPattern>
+                                    <shadedPattern>com.ovea.system.internal.sigar</shadedPattern>
                                 </relocation>
                             </relocations>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.ovea.network.Main</mainClass>
+                                    <mainClass>com.ovea.system.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -109,6 +109,15 @@
             <artifactId>sigar</artifactId>
             <version>1.6.4</version>
             <classifier>native</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.7</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
+            <optional>true</optional>
         </dependency>
 
         <!-- Testing -->
