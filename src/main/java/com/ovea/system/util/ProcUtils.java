@@ -4,6 +4,9 @@ import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
+import org.hyperic.jni.ArchNotSupportedException;
+import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarLoader;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
@@ -85,8 +88,7 @@ public final class ProcUtils {
             WinNT.HANDLE handle = Kernel32.INSTANCE.OpenProcess(0x0001, true, (int) pid);
             Kernel32.INSTANCE.TerminateProcess(handle, 0);
         } else {
-            //TODO
-            throw new UnsupportedOperationException();
+            UnixKiller.kill(pid);
         }
     }
 
@@ -113,13 +115,21 @@ public final class ProcUtils {
         }
     }
 
-    private static final class Killer extends Thread {
-
+    private static final class UnixKiller extends Thread {
         @Override
         public void run() {
 
         }
 
-
+        public static void kill(long pid) {
+            SigarLoader loader = new SigarLoader(Sigar.class);
+            try {
+                System.out.println(loader.getLibraryName());
+                System.out.println(loader.getPackageName() + ".path");
+            } catch (ArchNotSupportedException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            //TODO
+        }
     }
 }
