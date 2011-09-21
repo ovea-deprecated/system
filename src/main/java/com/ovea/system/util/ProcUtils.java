@@ -6,11 +6,21 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import org.hyperic.jni.ArchNotSupportedException;
 import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.SigarLoader;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.ReadableByteChannel;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,21 +125,78 @@ public final class ProcUtils {
         }
     }
 
-    private static final class UnixKiller extends Thread {
-        @Override
-        public void run() {
+    private static final class UnixKiller {
 
+        private static final Sigar SIGAR;
+
+        static {
+            try {
+                File tmp = new File(System.getProperty("java.io.tmpDir"), "ovea-system-sigar");
+                if (!tmp.exists()) {
+                    tmp.mkdirs();
+                }
+                SigarLoader loader = new SigarLoader(Sigar.class);
+                File lib = new File(tmp, loader.getLibraryName());
+                if (!lib.exists()) {
+                    FileChannel out;
+                    FileLock lock;
+                    try {
+                        out = new RandomAccessFile(lib, "rw").getChannel();
+                        lock = out.lock();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                    if (!lib.exists()) {
+                        ReadableByteChannel in = Channels.newChannel(new BufferedInputStream(loader.getClassLoader().getResourceAsStream(loader.getLibraryName())));
+                        ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
+                        try {
+                            while (in.read(buffer) != -1) {
+                                buffer.flip();
+                                out.write(buffer);
+                                buffer.compact();
+                                buffer.flip();
+                                while (buffer.hasRemaining()) {
+                                    out.write(buffer);
+                                }
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        } finally {
+                            try {
+                                lock.release();
+                            } catch (IOException ignored) {
+                            }
+                            try {
+                                out.close();
+                            } catch (IOException ignored) {
+                            }
+                        }
+
+                    }
+                }
+                System.setProperty(loader.getPackageName() + ".path", tmp.getAbsolutePath());
+                SIGAR = new Sigar();
+                Sigar.load();
+            } catch (ArchNotSupportedException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            } catch (SigarException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    SIGAR.close();
+                }
+            });
         }
 
         public static void kill(long pid) {
-            SigarLoader loader = new SigarLoader(Sigar.class);
+            int signal = Sigar.getSigNum("SIGTERM");
             try {
-                System.out.println(loader.getLibraryName());
-                System.out.println(loader.getPackageName() + ".path");
-            } catch (ArchNotSupportedException e) {
+                SIGAR.kill(pid, signal);
+            } catch (SigarException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-            //TODO
         }
     }
 }
