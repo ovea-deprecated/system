@@ -41,7 +41,7 @@ public final class ProcUtils {
     private ProcUtils() {
     }
 
-    public static long getPID(Process process) {
+    public static long pid(Process process) {
         String cName = process.getClass().getName();
         if (cName.equals("java.lang.UNIXProcess")) {
             /* get the PID on unix/linux systems */
@@ -69,13 +69,13 @@ public final class ProcUtils {
         }
     }
 
-    public static long getCurrentPID() {
+    public static long currentPID() {
         // lazy instanciation
         return RuntimePID.get();
     }
 
     public static void kill(Process process) {
-        long pid = getPID(process);
+        long pid = pid(process);
         String cName = process.getClass().getName();
         if (cName.equals("java.lang.UNIXProcess")) {
             /* get the PID on unix/linux systems */

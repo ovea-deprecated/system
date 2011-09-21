@@ -33,7 +33,7 @@ public final class Main {
             Trace.main(Main.class.getName());
         } else {
             boolean win = Platform.isWindows() || Platform.isWindowsCE();
-            System.out.println(" - PID = " + ProcUtils.getCurrentPID());
+            System.out.println(" - PID = " + ProcUtils.currentPID());
             System.out.println(" - Detected OS = " + (win ? "Windows" : "Unix-like"));
 
             FutureProcess process = launch(win ? "tasklist.exe" : "ps");
@@ -57,7 +57,7 @@ public final class Main {
             try {
                 process.get(1, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                ProcUtils.kill(process.getPID());
+                ProcUtils.kill(process.pid());
             }
             process.get();
         }
@@ -67,7 +67,7 @@ public final class Main {
         System.out.println(" - Launching " + proc + "...");
         FutureProcess process = new FutureProcess(new ProcessBuilder(proc).start());
         Thread.sleep(1000);
-        System.out.println(" - Child PID = " + process.getPID());
+        System.out.println(" - Child PID = " + process.pid());
         return process;
     }
 }

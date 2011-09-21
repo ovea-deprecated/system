@@ -69,8 +69,8 @@ public final class FutureProcess implements Future<Integer> {
         return process;
     }
 
-    public long getPID() {
-        return ProcUtils.getPID(process());
+    public long pid() {
+        return ProcUtils.pid(process());
     }
 
     // delegates
