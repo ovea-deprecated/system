@@ -1,4 +1,4 @@
-package com.ovea.system;
+package com.ovea.system.test;
 
 import com.ovea.system.proc.FutureProcess;
 import com.ovea.system.trace.Trace;
@@ -12,6 +12,7 @@ import java.util.concurrent.TimeoutException;
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
 public final class Main {
+
     public static void main(String... args) throws Exception {
         if (args.length == 1 && args[0].equals("-trace")) {
             Trace.main(Main.class.getName());

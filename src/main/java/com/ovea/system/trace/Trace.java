@@ -158,14 +158,16 @@ public class Trace {
             throw new Error("Bad launching connector");
         }
         mainArg.setValue(mainArgs);
+        Connector.Argument optionArg = arguments.get("options");
+        if (optionArg == null) {
+            throw new Error("Bad launching connector");
+        }
+        String arg = "-cp \"" + System.getProperty("java.class.path") + "\"";
         if (watchFields) {
             // We need a VM that supports watchpoints
-            Connector.Argument optionArg = arguments.get("options");
-            if (optionArg == null) {
-                throw new Error("Bad launching connector");
-            }
-            optionArg.setValue("-classic");
+            arg = "-classic " + arg;
         }
+        optionArg.setValue(arg);
         return arguments;
     }
 
