@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>ovea-system</artifactId>
-    <version>1.1.ga</version>
+    <version>1.2.ga-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>ovea-system</name>
