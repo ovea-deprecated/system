@@ -18,6 +18,7 @@ package com.ovea.system.util;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
@@ -60,6 +61,19 @@ public final class IoUtils {
                     try {
                         closeable.close();
                     } catch (IOException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    public static void close(Scanner... closeables) {
+        if (closeables != null && closeables.length > 0) {
+            for (Scanner closeable : closeables) {
+                if (closeable != null) {
+                    try {
+                        closeable.close();
+                    } catch (Exception ignored) {
                     }
                 }
             }
