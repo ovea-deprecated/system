@@ -16,6 +16,8 @@
 package com.ovea.system.util;
 
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
@@ -28,6 +30,32 @@ public final class IoUtils {
     public static void close(Closeable... closeables) {
         if (closeables != null && closeables.length > 0) {
             for (Closeable closeable : closeables) {
+                if (closeable != null) {
+                    try {
+                        closeable.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    public static void close(Socket... closeables) {
+        if (closeables != null && closeables.length > 0) {
+            for (Socket closeable : closeables) {
+                if (closeable != null) {
+                    try {
+                        closeable.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    public static void close(ServerSocket... closeables) {
+        if (closeables != null && closeables.length > 0) {
+            for (ServerSocket closeable : closeables) {
                 if (closeable != null) {
                     try {
                         closeable.close();
