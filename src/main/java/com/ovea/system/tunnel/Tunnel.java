@@ -16,6 +16,7 @@
 package com.ovea.system.tunnel;
 
 import com.ovea.system.pipe.*;
+import com.ovea.system.util.IoUtils;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -179,14 +180,7 @@ public final class Tunnel {
                 new TunnelListeners(new TunnelListenerAdapter() {
                     @Override
                     public void onClose(Tunnel tunnel) {
-                        try {
-                            left.close();
-                        } catch (IOException ignored) {
-                        }
-                        try {
-                            right.close();
-                        } catch (IOException ignored) {
-                        }
+                        IoUtils.close(left, right);
                     }
 
                     @Override

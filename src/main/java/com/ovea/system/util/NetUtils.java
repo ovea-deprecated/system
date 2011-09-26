@@ -17,6 +17,7 @@ package com.ovea.system.util;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Random;
 
 /**
@@ -27,9 +28,18 @@ public final class NetUtils {
     private NetUtils() {
     }
 
+    public static boolean canConnect(String host, int port) {
+        try {
+            IoUtils.close(new Socket(host, port));
+            return true;
+        } catch (IOException ignored) {
+        }
+        return false;
+    }
+
     public static boolean isPortAvailable(int port) {
         try {
-            new ServerSocket(port).close();
+            IoUtils.close(new ServerSocket(port));
             return true;
         } catch (IOException ignored) {
         }

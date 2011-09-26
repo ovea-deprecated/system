@@ -79,16 +79,7 @@ public final class SigarLoader {
                                 out.write(buffer, 0, c);
                             }
                         } finally {
-                            if (out != null)
-                                try {
-                                    out.close();
-                                } catch (IOException ignored) {
-                                }
-                            if (in != null)
-                                try {
-                                    in.close();
-                                } catch (IOException ignored) {
-                                }
+                            IoUtils.close(out, in);
                         }
                     }
                 } catch (IOException e) {

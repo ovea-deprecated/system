@@ -15,6 +15,8 @@
  */
 package com.ovea.system.pipe;
 
+import com.ovea.system.util.IoUtils;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -241,14 +243,7 @@ abstract class PipeSkeleton<IN extends Closeable, OUT extends Closeable> impleme
                     task.cancel(true);
                     copier.interrupt();
                 }
-                try {
-                    pipe.from.close();
-                } catch (Exception ignored) {
-                }
-                try {
-                    pipe.to.close();
-                } catch (Exception ignored) {
-                }
+                IoUtils.close(pipe.from, pipe.to);
                 pipe.from = null;
                 pipe.to = null;
                 if (copier != Thread.currentThread()) {

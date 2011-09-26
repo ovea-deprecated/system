@@ -17,6 +17,7 @@ package com.ovea.system.proc;
 
 import com.ovea.system.pipe.PipeConnection;
 import com.ovea.system.pipe.Pipes;
+import com.ovea.system.util.IoUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -68,10 +69,7 @@ public final class ProcessPipe extends Process {
                 @Override
                 public void onInterrupted(FutureProcess futureProcess) {
                     if (isLast) {
-                        try {
-                            sharedErrorStream.close();
-                        } catch (IOException ignored) {
-                        }
+                        IoUtils.close(sharedErrorStream);
                     }
                     finished.countDown();
                 }
@@ -183,10 +181,7 @@ public final class ProcessPipe extends Process {
             } catch (IOException ignored) {
             } finally {
                 lock.unlock();
-                try {
-                    stream.close();
-                } catch (IOException ignored) {
-                }
+                IoUtils.close(stream);
             }
         }
     }

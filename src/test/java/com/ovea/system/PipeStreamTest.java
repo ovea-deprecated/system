@@ -19,6 +19,7 @@ import com.mycila.junit.concurrent.Concurrency;
 import com.mycila.junit.concurrent.ConcurrentJunitRunner;
 import com.mycila.junit.rule.TimeRule;
 import com.ovea.system.pipe.*;
+import com.ovea.system.util.IoUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -271,7 +272,7 @@ public final class PipeStreamTest {
                     out.write("Hello world !".getBytes());
                     Thread.sleep(500);
                 }
-                out.close();
+                IoUtils.close(out);
             } catch (Exception e) {
                 //e.printStackTrace(System.out);
                 Thread.currentThread().interrupt();

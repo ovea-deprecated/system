@@ -16,16 +16,19 @@
 package com.ovea.system.trace;
 
 import com.ovea.system.pipe.Pipes;
-import com.sun.jdi.VirtualMachine;
+import com.ovea.system.util.IoUtils;
 import com.sun.jdi.Bootstrap;
-import com.sun.jdi.connect.*;
+import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.connect.Connector;
+import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.jdi.connect.LaunchingConnector;
+import com.sun.jdi.connect.VMStartException;
 
-import java.util.Map;
-import java.util.List;
-
-import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This program traces the execution of another program.
@@ -123,7 +126,7 @@ public class Trace {
         } catch (InterruptedException exc) {
             // we don't interrupt
         }
-        writer.close();
+        IoUtils.close(writer);
     }
 
     /**
