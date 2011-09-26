@@ -19,17 +19,12 @@ import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
-import org.hyperic.jni.ArchNotSupportedException;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
-import org.hyperic.sigar.SigarLoader;
 
-import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,7 +102,12 @@ public final class ProcUtils {
             WinNT.HANDLE handle = Kernel32.INSTANCE.OpenProcess(0x0001, true, (int) pid);
             Kernel32.INSTANCE.TerminateProcess(handle, 0);
         } else {
-            UnixKiller.kill(pid);
+            Sigar sigar = SigarLoader.instance();
+            try {
+                sigar.kill(pid, Sigar.getSigNum("SIGTERM"));
+            } catch (SigarException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
     }
 
@@ -134,97 +134,4 @@ public final class ProcUtils {
         }
     }
 
-    private static final class UnixKiller {
-
-        private static final String SIGAR_VERSION = "-" + System.getProperty("ovea.system.sigar.version", "1.6.4");
-        private static final Sigar SIGAR;
-
-        static {
-            try {
-                File tmp = new File(System.getProperty("java.io.tmpdir"), "ovea-system-sigar");
-                if (!tmp.exists()) {
-                    tmp.mkdirs();
-                }
-                SigarLoader loader = new SigarLoader(Sigar.class);
-                File lib = new File(tmp, loader.getLibraryName());
-                File lockFile = new File(lib + ".lock");
-                FileChannel channel = null;
-                FileLock lock = null;
-
-                try {
-                    channel = new RandomAccessFile(lockFile, "rw").getChannel();
-                    lock = channel.lock();
-                    if (!lib.exists()) {
-                        InputStream in = null;
-                        OutputStream out = null;
-                        try {
-                            String name = loader.getLibName();
-                            if (name == null) {
-                                name = loader.getDefaultLibName();
-                            }
-                            name = SigarLoader.getLibraryPrefix() + name + SIGAR_VERSION + SigarLoader.getLibraryExtension();
-                            in = loader.getClassLoader().getResourceAsStream(name);
-                            if (in == null) {
-                                throw new IllegalStateException("SIGAR library " + name + " not found in classpath");
-                            }
-                            in = new BufferedInputStream(in);
-                            out = new BufferedOutputStream(new FileOutputStream(lib));
-                            byte[] buffer = new byte[8192];
-                            int c;
-                            while ((c = in.read(buffer)) != -1) {
-                                out.write(buffer, 0, c);
-                            }
-                        } finally {
-                            if (out != null)
-                                try {
-                                    out.close();
-                                } catch (IOException ignored) {
-                                }
-                            if (in != null)
-                                try {
-                                    in.close();
-                                } catch (IOException ignored) {
-                                }
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e.getMessage(), e);
-                } finally {
-                    if (lock != null)
-                        try {
-                            lock.release();
-                        } catch (IOException ignored) {
-                        }
-                    if (channel != null)
-                        try {
-                            channel.close();
-                        } catch (IOException ignored) {
-                        }
-                    lockFile.delete();
-                }
-                System.setProperty(loader.getPackageName() + ".path", tmp.getAbsolutePath());
-                SIGAR = new Sigar();
-                Sigar.load();
-            } catch (ArchNotSupportedException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            } catch (SigarException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    SIGAR.close();
-                }
-            });
-        }
-
-        public static void kill(long pid) {
-            int signal = Sigar.getSigNum("SIGTERM");
-            try {
-                SIGAR.kill(pid, signal);
-            } catch (SigarException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        }
-    }
 }

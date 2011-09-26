@@ -53,8 +53,9 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <createSourcesJar>true</createSourcesJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <!--<createSourcesJar>true</createSourcesJar>-->
+                            <shadedClassifierName>all</shadedClassifierName>
                             <artifactSet>
                                 <includes>
                                     <include>net.java.dev.jna:jna</include>
@@ -63,7 +64,7 @@
                                     <include>org.fusesource:sigar:native</include>
                                 </includes>
                             </artifactSet>
-                            <relocations>
+                            <!--<relocations>
                                 <relocation>
                                     <pattern>com.sun.jna</pattern>
                                     <shadedPattern>com.ovea.system.internal.jna</shadedPattern>
@@ -72,7 +73,7 @@
                                     <pattern>org.hyperic</pattern>
                                     <shadedPattern>com.ovea.system.internal.sigar</shadedPattern>
                                 </relocation>
-                            </relocations>
+                            </relocations>-->
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.ovea.system.test.Main</mainClass>
@@ -103,12 +104,12 @@
             <groupId>org.fusesource</groupId>
             <artifactId>sigar</artifactId>
             <version>1.6.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.fusesource</groupId>
-            <artifactId>sigar</artifactId>
-            <version>1.6.4</version>
-            <classifier>native</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
