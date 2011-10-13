@@ -17,6 +17,7 @@ package com.ovea.system;
 
 import com.ovea.system.pipe.Pipes;
 import com.ovea.system.proc.ProcessPipe;
+import com.ovea.system.util.ProcUtils;
 
 import java.io.IOException;
 
@@ -25,6 +26,9 @@ import java.io.IOException;
  */
 final class ProcessPipeMain2 {
     public static void main(String[] args) throws IOException, InterruptedException {
+
+        System.out.println(ProcUtils.exist(111111));
+
         ProcessPipe pipe = Pipes.pipe(
                 new ProcessBuilder("C:\\cygwin\\bin\\ls.exe", "-al", "/cygdrive/d/kha/workspace/ovea/project/pipe/src").start(),
                 new ProcessBuilder("C:\\cygwin\\bin\\cut.exe", "-c", "50-").start(),
