@@ -41,7 +41,11 @@ public final class Pipes {
     }
 
     public static Pipe create(String name, InputStream in, OutputStream out) {
-        return new PipeByteStream(name, in, out);
+        return create(name, in, out, 8192);
+    }
+
+    public static Pipe create(String name, InputStream in, OutputStream out, int bufferSize) {
+        return new PipeByteStream(name, in, out, bufferSize);
     }
 
     public static Pipe create(Reader in, Writer out) {
@@ -49,7 +53,11 @@ public final class Pipes {
     }
 
     public static Pipe create(String name, Reader in, Writer out) {
-        return new PipeCharacterStream(name, in, out);
+        return create(name, in, out, 8192);
+    }
+
+    public static Pipe create(String name, Reader in, Writer out, int bufferSize) {
+        return new PipeCharacterStream(name, in, out, bufferSize);
     }
 
     public static Pipe create(ReadableByteChannel in, WritableByteChannel out) {
@@ -57,7 +65,11 @@ public final class Pipes {
     }
 
     public static Pipe create(String name, ReadableByteChannel in, WritableByteChannel out) {
-        return new PipeByteChannel(name, in, out);
+        return create(name, in, out, 64 * 1024);
+    }
+
+    public static Pipe create(String name, ReadableByteChannel in, WritableByteChannel out, int bufferSize) {
+        return new PipeByteChannel(name, in, out, bufferSize);
     }
 
     /* connects*/
@@ -70,6 +82,10 @@ public final class Pipes {
         return create(name, in, out).connect();
     }
 
+    public static PipeConnection connect(String name, InputStream in, OutputStream out, int bufferSize) {
+        return create(name, in, out, bufferSize).connect();
+    }
+
     public static PipeConnection connect(Reader in, Writer out) {
         return create(in, out).connect();
     }
@@ -78,12 +94,20 @@ public final class Pipes {
         return create(name, in, out).connect();
     }
 
+    public static PipeConnection connect(String name, Reader in, Writer out, int bufferSize) {
+        return create(name, in, out, bufferSize).connect();
+    }
+
     public static PipeConnection connect(ReadableByteChannel in, WritableByteChannel out) {
         return create(in, out).connect();
     }
 
     public static PipeConnection connect(String name, ReadableByteChannel in, WritableByteChannel out) {
         return create(name, in, out).connect();
+    }
+
+    public static PipeConnection connect(String name, ReadableByteChannel in, WritableByteChannel out, int bufferSize) {
+        return create(name, in, out, bufferSize).connect();
     }
 
     /* process */

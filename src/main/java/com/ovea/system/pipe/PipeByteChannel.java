@@ -25,17 +25,21 @@ import java.nio.channels.WritableByteChannel;
  */
 final class PipeByteChannel extends PipeSkeleton<ReadableByteChannel, WritableByteChannel> {
 
+    private final int bufferSize;
+
     public PipeByteChannel(ReadableByteChannel from, WritableByteChannel to) {
         super(from, to);
+        this.bufferSize = 64 * 1024;
     }
 
-    public PipeByteChannel(String name, ReadableByteChannel from, WritableByteChannel to) {
+    public PipeByteChannel(String name, ReadableByteChannel from, WritableByteChannel to, int bufferSize) {
         super(name, from, to);
+        this.bufferSize = bufferSize;
     }
 
     @Override
     protected void copy(ReadableByteChannel from, WritableByteChannel to) throws IOException, BrokenPipeException {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(64 * 1024);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
         while (from.read(buffer) != -1) {
             buffer.flip();
             to.write(buffer);

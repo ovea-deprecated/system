@@ -24,17 +24,21 @@ import java.io.OutputStream;
  */
 final class PipeByteStream extends PipeSkeleton<InputStream, OutputStream> {
 
+    private final int bufferSize;
+
     public PipeByteStream(InputStream from, OutputStream to) {
         super(from, to);
+        this.bufferSize = 8192;
     }
 
-    public PipeByteStream(String name, InputStream from, OutputStream to) {
+    public PipeByteStream(String name, InputStream from, OutputStream to, int bufferSize) {
         super(name, from, to);
+        this.bufferSize = bufferSize;
     }
 
     @Override
     protected void copy(InputStream from, OutputStream to) throws IOException, BrokenPipeException {
-        byte[] buffer = new byte[8192];
+        byte[] buffer = new byte[bufferSize];
         int len;
         while (canCopy() && (len = from.read(buffer)) != -1) {
             to.write(buffer, 0, len);
