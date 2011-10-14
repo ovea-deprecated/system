@@ -49,15 +49,17 @@ public final class ProcUtils {
             }
         } else if (cName.equals("java.lang.ProcessImpl") || cName.equals("java.lang.Win32Process")) {
             /* determine the pid on windows plattforms */
+            WinNT.HANDLE handle = new WinNT.HANDLE();
             try {
                 Field f = process.getClass().getDeclaredField("handle");
                 f.setAccessible(true);
                 long handl = f.getLong(process);
-                WinNT.HANDLE handle = new WinNT.HANDLE();
                 handle.setPointer(Pointer.createConstant(handl));
                 return Kernel32.INSTANCE.GetProcessId(handle);
             } catch (Throwable e) {
                 throw new IllegalStateException("Unable to recover PID from Windows process" + process);
+            } finally {
+                Kernel32.INSTANCE.CloseHandle(handle);
             }
         } else {
             throw new IllegalArgumentException("Process type not supported: " + process.getClass().getName());
@@ -69,7 +71,7 @@ public final class ProcUtils {
         return RuntimePID.get();
     }
 
-    public static void kill(Process process) {
+    public static void terminate(Process process) {
         long pid = pid(process);
         String cName = process.getClass().getName();
         if (cName.equals("java.lang.UNIXProcess")) {
@@ -79,7 +81,7 @@ public final class ProcUtils {
                 destroyProcess.setAccessible(true);
                 destroyProcess.invoke(null, (int) pid);
             } catch (Throwable e) {
-                kill(pid);
+                terminate(pid);
             }
         } else if (cName.equals("java.lang.ProcessImpl") || cName.equals("java.lang.Win32Process")) {
             /* determine the pid on windows plattforms */
@@ -90,7 +92,7 @@ public final class ProcUtils {
                 destroyProcess.setAccessible(true);
                 destroyProcess.invoke(null, f.getLong(process));
             } catch (Throwable e) {
-                kill(pid);
+                terminate(pid);
             }
         } else {
             throw new IllegalArgumentException("Process type not supported: " + process.getClass().getName());
@@ -117,7 +119,15 @@ public final class ProcUtils {
         }
     }
 
+    public static void terminate(long pid) {
+        kill(pid, "SIGTERM");
+    }
+
     public static void kill(long pid) {
+        kill(pid, "SIGKILL");
+    }
+
+    public static void kill(long pid, String signal) {
         if (Platform.isWindows() || Platform.isWindowsCE()) {
             WinNT.HANDLE handle = Kernel32.INSTANCE.OpenProcess(0x0001, true, (int) pid);
             try {
@@ -132,7 +142,7 @@ public final class ProcUtils {
         } else {
             Sigar sigar = SigarLoader.instance();
             try {
-                sigar.kill(pid, Sigar.getSigNum("SIGTERM"));
+                sigar.kill(pid, Sigar.getSigNum(signal));
             } catch (SigarException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }

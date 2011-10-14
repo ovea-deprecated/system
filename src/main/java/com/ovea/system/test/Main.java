@@ -49,7 +49,7 @@ public final class Main {
             try {
                 process.get(1, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                ProcUtils.kill(process.process());
+                ProcUtils.terminate(process.process());
             }
             process.get();
 
@@ -57,7 +57,7 @@ public final class Main {
             try {
                 process.get(1, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                ProcUtils.kill(process.pid());
+                ProcUtils.terminate(process.pid());
             }
             process.get();
         }
