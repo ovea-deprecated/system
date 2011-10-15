@@ -141,10 +141,10 @@ public final class ProcUtils {
             }
         } else {
             Sigar sigar = SigarLoader.instance();
+            int n = Sigar.getSigNum(signal);
             try {
-                sigar.kill(pid, Sigar.getSigNum(signal));
-            } catch (SigarException e) {
-                throw new RuntimeException(e.getMessage(), e);
+                sigar.kill(pid, n);
+            } catch (SigarException ignored) {
             }
         }
     }
