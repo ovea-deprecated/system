@@ -19,6 +19,7 @@ import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
+import org.hyperic.sigar.ProcState;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
@@ -101,8 +102,8 @@ public final class ProcUtils {
 
     public static boolean exist(long pid) {
         try {
-            SigarLoader.instance().getProcState(pid);
-            return true;
+            ProcState state = SigarLoader.instance().getProcState(pid);
+            return state.getPpid() > 0;
         } catch (SigarException e) {
             return false;
         }
