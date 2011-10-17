@@ -100,22 +100,11 @@ public final class ProcUtils {
     }
 
     public static boolean exist(long pid) {
-        if (Platform.isWindows() || Platform.isWindowsCE()) {
-            WinNT.HANDLE handle = Kernel32.INSTANCE.OpenProcess(0x0400, true, (int) pid);
-            try {
-                return handle != null;
-            } finally {
-                if (handle != null) {
-                    Kernel32.INSTANCE.CloseHandle(handle);
-                }
-            }
-        } else {
-            try {
-                SigarLoader.instance().getProcState(pid);
-                return true;
-            } catch (SigarException e) {
-                return false;
-            }
+        try {
+            SigarLoader.instance().getProcState(pid);
+            return true;
+        } catch (SigarException e) {
+            return false;
         }
     }
 

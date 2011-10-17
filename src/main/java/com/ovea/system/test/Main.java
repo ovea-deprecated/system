@@ -17,8 +17,8 @@ package com.ovea.system.test;
 
 import com.ovea.system.proc.FutureProcess;
 import com.ovea.system.trace.Trace;
+import com.ovea.system.util.Platform;
 import com.ovea.system.util.ProcUtils;
-import com.sun.jna.Platform;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
